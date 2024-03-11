@@ -1,8 +1,7 @@
 defmodule ExTreeSitterTest do
   use ExUnit.Case
-  doctest ExTreeSitter
 
-  test "greets the world" do
-    assert ExTreeSitter.hello() == :world
+  test "returns a parser" do
+    assert is_reference(ExTreeSitter.new())
   end
 end

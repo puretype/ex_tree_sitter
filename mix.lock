@@ -1,0 +1,3 @@
+%{
+  "elixir_make": {:hex, :elixir_make, "0.8.2", "cd4a5a75891362e9207adaac7e66223fd256ec2518ae013af7f10c9c85b50b5c", [:mix], [{:castore, "~> 0.1 or ~> 1.0", [hex: :castore, repo: "hexpm", optional: true]}, {:certifi, "~> 2.0", [hex: :certifi, repo: "hexpm", optional: true]}], "hexpm", "9d9607d640c372a7291e5a56ce655aa2351897929be20bd211648fdb79e725dc"},
+}

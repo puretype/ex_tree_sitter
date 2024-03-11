@@ -24,3 +24,9 @@ ex_tree_sitter-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Output directory for shared library
+/priv/
+
+# Built shared library
+*.so

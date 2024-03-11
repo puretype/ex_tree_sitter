@@ -1,0 +1,9 @@
+TOPTARGETS := all clean
+
+SUBDIRS := c_src nif
+
+$(TOPTARGETS): $(SUBDIRS)
+$(SUBDIRS):
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+.PHONY: $(TOPTARGETS) $(SUBDIRS)
