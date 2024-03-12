@@ -22,6 +22,7 @@ defmodule ExTreeSitter.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:elixir_make, "~> 0.4", runtime: false}
     ]
   end

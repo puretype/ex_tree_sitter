@@ -4,6 +4,7 @@ defmodule ExTreeSitter do
   """
 
   @compile {:autoload, false}
+  @external_resource "../nif/tree_sitter_nif.c"
   @on_load {:load_nif, 0}
 
   def load_nif() do

@@ -4,6 +4,8 @@
 #include <string.h>
 #include <tree_sitter/api.h>
 
+// hello
+
 #define MAX_PATHNAME 512
 #define MAX_FUNCTIONNAME 128
 
