@@ -103,9 +103,11 @@ ERL_NIF_TERM ts_set_language(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
     return enif_make_badarg(env);
   }
 
-  ts_parser_set_language(parser_resource->parser, language_resource->dl_function());
-
-  return make_atom(env, "ok");
+  if (ts_parser_set_language(parser_resource->parser, language_resource->dl_function())) {
+    return make_atom(env, "ok");
+  } else {
+    return make_error_tuple(env, "version_mismatch");
+  }
 }
 
 ERL_NIF_TERM ts_parse_string(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
@@ -172,6 +174,15 @@ ERL_NIF_TERM ts_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     return make_error_tuple(env, "general_query_error");
   }
 
+  uint32_t capture_count = ts_query_capture_count(query);
+  ERL_NIF_TERM capture_atoms[capture_count];
+
+  for (uint32_t i = 0; i < capture_count; i++) {
+    uint32_t length;
+    const char* name = ts_query_capture_name_for_id(query, i, &length);
+    capture_atoms[i] = enif_make_atom_len(env, name, length);
+  }
+
   TSQueryCursor* cursor = ts_query_cursor_new();
   TSNode root = ts_tree_root_node(tree_resource->tree);
 
@@ -192,16 +203,20 @@ ERL_NIF_TERM ts_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
       enif_make_map_put(env, capture_item, make_atom(env, "end"), enif_make_int(env, ts_node_end_byte(capture->node)), &capture_item);
       enif_make_map_put(env, capture_item, make_atom(env, "type"), type, &capture_item);
 
-      captures = enif_make_list_cell(env, capture_item, captures);
+      captures = enif_make_list_cell(env, enif_make_tuple2(env, capture_atoms[capture->index], capture_item), captures);
+      // make list from array instead - since we know count ahead of time
     }
 
     matches = enif_make_list_cell(env, captures, matches);
   }
 
+  ERL_NIF_TERM reversed_matches;
+  enif_make_reverse_list(env, matches, &reversed_matches);
+
   ts_query_cursor_delete(cursor);
   ts_query_delete(query);
 
-  return enif_make_tuple2(env, make_atom(env, "ok"), matches);
+  return enif_make_tuple2(env, make_atom(env, "ok"), reversed_matches);
 }
 
 static void parser_type_destructor(ErlNifEnv* env, void* arg) {
