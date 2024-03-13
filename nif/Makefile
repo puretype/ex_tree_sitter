@@ -18,7 +18,7 @@ endif
 all: $(OUTPUT_LIBRARY)
 
 clean:
-	rm -f $(OUTPUT_LIBRARY)
+	rm -f $(PREFIX)/$(OUTPUT_LIBRARY)
 
 $(OUTPUT_LIBRARY): tree_sitter_nif.c
 	$(CC) $(CFLAGS) $(ERL_CFLAGS) $(LDFLAGS) $(ERL_LDFLAGS) -I ../c_src/lib/include -o $@ $< ../c_src/libtree-sitter.a
