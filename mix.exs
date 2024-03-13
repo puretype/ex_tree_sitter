@@ -23,7 +23,7 @@ defmodule ExTreeSitter.MixProject do
 
   defp package do
     [
-      files: ~w(lib mix.exs README* LICENSE* c_src nif),
+      files: ~w(lib mix.exs README* LICENSE* c_src nif Makefile),
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/puretype/ex_tree_sitter"}
     ]
