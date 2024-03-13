@@ -23,7 +23,7 @@ defmodule ExTreeSitter.MixProject do
 
   defp package do
     [
-      files: ~w(lib mix.exs README* LICENSE* c_src nif),
+      files: ~w(lib mix.exs README* LICENSE* c_src nif Makefile),
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/puretype/ex_tree_sitter"}
     ]
@@ -31,6 +31,7 @@ defmodule ExTreeSitter.MixProject do
 
   defp deps do
     [
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:elixir_make, "~> 0.4", runtime: false}
     ]
