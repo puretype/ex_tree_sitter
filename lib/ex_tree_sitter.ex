@@ -8,7 +8,7 @@ defmodule ExTreeSitter do
   @on_load {:load_nif, 0}
 
   def load_nif() do
-    :ok = :erlang.load_nif('./nif/tree_sitter_nif', 0)
+    :ok = :erlang.load_nif(~c"./nif/tree_sitter_nif", 0)
   end
 
   def new(), do: :erlang.nif_error(:not_loaded)

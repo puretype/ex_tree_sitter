@@ -4,22 +4,31 @@ defmodule ExTreeSitter.MixProject do
   def project do
     [
       app: :ex_tree_sitter,
-      version: "0.1.0",
+      version: "0.0.1",
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       compilers: [:elixir_make] ++ Mix.compilers(),
+      description: "Elixir bindings for tree-sitter",
+      package: package(),
+      source_url: "https://github.com/puretype/ex_tree_sitter",
       deps: deps()
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger]
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
+  defp package do
+    [
+      files: ~w(lib mix.exs README* LICENSE* c_src nif),
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/puretype/ex_tree_sitter"}
+    ]
+  end
+
   defp deps do
     [
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
