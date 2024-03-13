@@ -8,6 +8,7 @@ defmodule ExTreeSitter.MixProject do
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       compilers: [:elixir_make] ++ Mix.compilers(),
+      make_clean: ["clean"],
       description: "Elixir bindings for tree-sitter",
       package: package(),
       source_url: "https://github.com/puretype/ex_tree_sitter",

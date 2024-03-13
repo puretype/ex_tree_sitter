@@ -8,7 +8,8 @@ defmodule ExTreeSitter do
   @on_load {:load_nif, 0}
 
   def load_nif() do
-    :ok = :erlang.load_nif(~c"./nif/tree_sitter_nif", 0)
+    path = Application.app_dir(:ex_tree_sitter, ["priv", "nif", "tree_sitter_nif"])
+    :ok = :erlang.load_nif(path, 0)
   end
 
   def new(), do: :erlang.nif_error(:not_loaded)
