@@ -230,6 +230,16 @@ ERL_NIF_TERM ts_exec_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) 
     return enif_make_badarg(env);
   }
 
+  uint32_t string_count = ts_query_string_count(query);
+  ERL_NIF_TERM string_atoms[string_count];
+
+  for (uint32_t i = 0; i < string_count; i++) {
+    uint32_t length;
+    const char* value = ts_query_string_value_for_id(query, i, &length);
+    // NEED THESE AS STRINGS TOO!
+    string_atoms[i] = enif_make_atom_len(env, value, length);
+  }
+
   uint32_t capture_count = ts_query_capture_count(query);
   ERL_NIF_TERM capture_atoms[capture_count];
 
@@ -238,6 +248,8 @@ ERL_NIF_TERM ts_exec_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) 
     const char* name = ts_query_capture_name_for_id(query, i, &length);
     capture_atoms[i] = enif_make_atom_len(env, name, length);
   }
+
+  uint32_t pattern_count = ts_query_pattern_count(query);
 
   TSQueryCursor* cursor = ts_query_cursor_new();
   TSNode root = ts_tree_root_node(tree_resource->tree);
@@ -271,9 +283,21 @@ ERL_NIF_TERM ts_exec_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) 
   ERL_NIF_TERM reversed_matches;
   enif_make_reverse_list(env, matches, &reversed_matches);
 
+  for (uint32_t i = 0; i < pattern_count; i++) {
+    uint32_t predicate_count = 0;
+    const TSQueryPredicateStep* predicates = ts_query_predicates_for_pattern(query, i, &predicate_count);
+
+    for (const TSQueryPredicateStep* step = &predicates[0]; step->type != TSQueryPredicateStepTypeDone; step++) {
+    }
+  }
+
   ts_query_cursor_delete(cursor);
 
-  return enif_make_tuple2(env, make_atom(env, "ok"), reversed_matches);
+  ERL_NIF_TERM result_map = enif_make_new_map(env);
+  enif_make_map_put(env, result_map, reversed_matches, make_atom(env, "matches"), &result_map);
+  // enif_make_map_put(env, result_map, predicates, make_atom(env, "predicates"), &result_map);
+
+  return enif_make_tuple2(env, make_atom(env, "ok"), result_map);
 }
 
 static void parser_type_destructor(ErlNifEnv* env, void* arg) {
