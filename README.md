@@ -12,7 +12,7 @@ by adding `ex_tree_sitter` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_tree_sitter, "~> 0.1.0"}
+    {:ex_tree_sitter, "~> 0.0.1"}
   ]
 end
 ```
