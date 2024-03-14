@@ -16,5 +16,7 @@ defmodule ExTreeSitter do
   def new_language(_library, _function), do: :erlang.nif_error(:not_loaded)
   def set_language(_parser, _language), do: :erlang.nif_error(:not_loaded)
   def parse_string(_parser, _source_code), do: :erlang.nif_error(:not_loaded)
-  def query(_language, _query, _tree), do: :erlang.nif_error(:not_loaded)
+
+  def new_query(_language, _source), do: :erlang.nif_error(:not_loaded)
+  def exec_query(_query, _tree), do: :erlang.nif_error(:not_loaded)
 end
