@@ -11,6 +11,7 @@
 
 static ErlNifResourceType* parser_type = NULL;
 static ErlNifResourceType* language_type = NULL;
+static ErlNifResourceType* query_type = NULL;
 static ErlNifResourceType* tree_type = NULL;
 
 typedef struct {
@@ -21,6 +22,10 @@ typedef struct {
   void* dl_handle;
   const TSLanguage* (*dl_function)();
 } language_resource_t;
+
+typedef struct {
+  TSQuery* query;
+} query_resource_t;
 
 typedef struct {
   TSTree* tree;
@@ -139,23 +144,15 @@ ERL_NIF_TERM ts_parse_string(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   return result;
 }
 
-ERL_NIF_TERM ts_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-  if (argc != 3) {
-    return enif_make_badarg(env);
-  }
+ERL_NIF_TERM ts_new_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+  ErlNifBinary query_string;
 
   language_resource_t* language_resource;
   if (!enif_get_resource(env, argv[0], language_type, (void**)&language_resource)) {
     return enif_make_badarg(env);
   }
 
-  ErlNifBinary query_string;
   if (!enif_inspect_binary(env, argv[1], &query_string)) {
-    return enif_make_badarg(env);
-  }
-
-  tree_resource_t* tree_resource;
-  if (!enif_get_resource(env, argv[2], tree_type, (void**)&tree_resource)) {
     return enif_make_badarg(env);
   }
 
@@ -172,6 +169,32 @@ ERL_NIF_TERM ts_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if (query == NULL) {
     return make_error_tuple(env, "general_query_error");
+  }
+
+  query_resource_t* query_resource = enif_alloc_resource(query_type, sizeof(query_resource_t));
+  query_resource->query = query;
+
+  ERL_NIF_TERM result = enif_make_resource(env, query_resource);
+  enif_release_resource(query_resource);
+
+  return enif_make_tuple2(env, make_atom(env, "ok"), result);
+}
+
+ERL_NIF_TERM ts_exec_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+  if (argc != 2) {
+    return enif_make_badarg(env);
+  }
+
+  query_resource_t* query_resource;
+  if (!enif_get_resource(env, argv[0], query_type, (void**)&query_resource)) {
+    return enif_make_badarg(env);
+  }
+
+  const TSQuery* query = query_resource->query;
+
+  tree_resource_t* tree_resource;
+  if (!enif_get_resource(env, argv[1], tree_type, (void**)&tree_resource)) {
+    return enif_make_badarg(env);
   }
 
   uint32_t capture_count = ts_query_capture_count(query);
@@ -214,7 +237,6 @@ ERL_NIF_TERM ts_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   enif_make_reverse_list(env, matches, &reversed_matches);
 
   ts_query_cursor_delete(cursor);
-  ts_query_delete(query);
 
   return enif_make_tuple2(env, make_atom(env, "ok"), reversed_matches);
 }
@@ -232,6 +254,14 @@ static void language_type_destructor(ErlNifEnv* env, void* arg) {
 
   if (language_resource != NULL) {
     dlclose(language_resource->dl_handle);
+  }
+}
+
+static void query_type_destructor(ErlNifEnv* env, void* arg) {
+  query_resource_t* query_resource = (query_resource_t*)arg;
+
+  if (query_resource != NULL) {
+    ts_query_delete(query_resource->query);
   }
 }
 
@@ -271,6 +301,18 @@ static int on_load(ErlNifEnv* env, void** priv, ERL_NIF_TERM info) {
     return -1;
   }
 
+  query_type = enif_open_resource_type(
+      env,
+      NULL,
+      "ts_query",
+      query_type_destructor,
+      ERL_NIF_RT_CREATE,
+      NULL);
+  if (query_type == NULL)
+  {
+    return -1;
+  }
+
   tree_type = enif_open_resource_type(
       env,
       NULL,
@@ -291,7 +333,8 @@ static ErlNifFunc nif_funcs[] = {
   {"new_language", 2, ts_new_language},
   {"set_language", 2, ts_set_language},
   {"parse_string", 2, ts_parse_string},
-  {"query", 3, ts_query}
+  {"new_query", 2, ts_new_query},
+  {"exec_query", 2, ts_exec_query}
 };
 
 ERL_NIF_INIT(Elixir.ExTreeSitter, nif_funcs, on_load, NULL, NULL, NULL)
