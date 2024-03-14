@@ -47,6 +47,17 @@ ERL_NIF_TERM make_error_tuple(ErlNifEnv* env, const char* reason) {
 
 //
 
+ERL_NIF_TERM point_to_map(ErlNifEnv* env, const TSPoint point) {
+  ERL_NIF_TERM point_map = enif_make_new_map(env);
+
+  enif_make_map_put(env, point_map, make_atom(env, "row"), enif_make_int(env, point.row), &point_map);
+  enif_make_map_put(env, point_map, make_atom(env, "column"), enif_make_int(env, point.column), &point_map);
+
+  return point_map;
+}
+
+//
+
 ERL_NIF_TERM ts_new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   parser_resource_t* parser_resource = enif_alloc_resource(parser_type, sizeof(parser_resource_t));
 
@@ -222,8 +233,10 @@ ERL_NIF_TERM ts_exec_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) 
       const char* node_type = ts_node_type(capture->node);
       ERL_NIF_TERM type = make_atom(env, node_type);
 
-      enif_make_map_put(env, capture_item, make_atom(env, "start"), enif_make_int(env, ts_node_start_byte(capture->node)), &capture_item);
-      enif_make_map_put(env, capture_item, make_atom(env, "end"), enif_make_int(env, ts_node_end_byte(capture->node)), &capture_item);
+      enif_make_map_put(env, capture_item, make_atom(env, "start_byte"), enif_make_int(env, ts_node_start_byte(capture->node)), &capture_item);
+      enif_make_map_put(env, capture_item, make_atom(env, "end_byte"), enif_make_int(env, ts_node_end_byte(capture->node)), &capture_item);
+      enif_make_map_put(env, capture_item, make_atom(env, "start"), point_to_map(env, ts_node_start_point(capture->node)), &capture_item);
+      enif_make_map_put(env, capture_item, make_atom(env, "end"), point_to_map(env, ts_node_end_point(capture->node)), &capture_item);
       enif_make_map_put(env, capture_item, make_atom(env, "type"), type, &capture_item);
 
       captures = enif_make_list_cell(env, enif_make_tuple2(env, capture_atoms[capture->index], capture_item), captures);
