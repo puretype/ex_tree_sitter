@@ -56,6 +56,23 @@ ERL_NIF_TERM point_to_map(ErlNifEnv* env, const TSPoint point) {
   return point_map;
 }
 
+ERL_NIF_TERM query_error_to_atom(ErlNifEnv* env, TSQueryError error) {
+  switch (error) {
+    case TSQueryErrorNone:
+      return make_atom(env, "none");
+    case TSQueryErrorSyntax:
+      return make_atom(env, "syntax");
+    case TSQueryErrorNodeType:
+      return make_atom(env, "node_type");
+    case TSQueryErrorField:
+      return make_atom(env, "field");
+    case TSQueryErrorCapture:
+      return make_atom(env, "capture");
+    default:
+      return make_atom(env, "unknown");
+  }
+}
+
 //
 
 ERL_NIF_TERM ts_new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
@@ -179,7 +196,12 @@ ERL_NIF_TERM ts_new_query(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     );
 
   if (query == NULL) {
-    return make_error_tuple(env, "general_query_error");
+    return enif_make_tuple3(
+      env,
+      make_atom(env, "error"),
+      query_error_to_atom(env, error_type),
+      enif_make_int(env, error_offset)
+      );
   }
 
   query_resource_t* query_resource = enif_alloc_resource(query_type, sizeof(query_resource_t));
